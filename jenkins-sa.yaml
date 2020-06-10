@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: jenkins-sa-template
+objects:
+---
+- apiVersion: project.openshift.io/v1
+  kind: ProjectRequest
+  metadata:
+    name: ${PROJECT_NAME}
+---
+- apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    name: jenkins
+    namespace: ${PROJECT_NAME}
+---
+- apiVersion: rbac.authorization.k8s.io/v1beta1
+  kind: ClusterRole
+  metadata:
+    name: jenkins
+  rules:
+  - apiGroups:
+      - ""
+    resources:
+      - projects
+    verbs:
+      - list
+  - apiGroups:
+      - ""
+    resources:
+      - clusterroles
+      - clusterrolebindings
+      - customresourcedefinitions
+      - mutatingwebhookconfigurations
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+---
+- apiVersion: rbac.authorization.k8s.io/v1beta1
+  kind: ClusterRoleBinding
+  metadata:
+    name: jenkins-jenkins-crb
+  roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: jenkins
+  subjects:
+  - kind: ServiceAccount
+    name: jenkins
+    namespace: ${PROJECT_NAME}
+---
+- apiVersion: rbac.authorization.k8s.io/v1beta1
+  kind: ClusterRoleBinding
+  metadata:
+    name: jenkins-self-provisioner-crb
+  roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: self-provisioner
+  subjects:
+  - kind: ServiceAccount
+    name: jenkins
+    namespace: ${PROJECT_NAME}
+---
+parameters:
+- description: The name of the OCP project
+  name: PROJECT_NAME
+  required: true
