@@ -42,6 +42,9 @@ objects:
       - clusterrolebindings
       - customresourcedefinitions
       - mutatingwebhookconfigurations
+      - projectrequests
+      - services
+      - serviceaccounts
     verbs:
       - create
       - delete
